@@ -54,10 +54,10 @@ jobs:
           Workflow name - `${{ github.workflow }}`
           Job -           `${{ github.job }}`
           status -        `${{ job.status }}`
-        assignees: c-kinsumandy
+        assignees: wkcjay
         
     - name: Publish Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v2
       if: always()
       with:
-        junit_files: "report.xml"
+        junit_files: "report.xml" 
