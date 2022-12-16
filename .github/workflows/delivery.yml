@@ -30,7 +30,7 @@ jobs:
           Workflow name - `${{ github.workflow }}`
           Job -           `${{ github.job }}`
           status -        `${{ job.status }}`
-        assignees: c-kinsumandy
+        assignees: wkcjay
         
     - name: Validate the Go Codes
       uses: goreleaser/goreleaser-action@v2.6.1
