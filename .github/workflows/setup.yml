@@ -1,0 +1,63 @@
+name : Demo Virtual Machine
+on:
+  push:
+    branches: [main]
+    
+jobs:
+  build:
+    name: Virtual Machine
+    runs-on: Ubuntu-latest
+    steps:
+    # Neccessary 
+    - name: checkout my codes
+      uses: actions/checkout@v2
+    - name: Setup Go Environment
+      uses: actions/setup-go@v3.5.0
+      with:
+        # The Go version to download (if necessary) and use. Supports semver spec and ranges.
+        go-version: 1.19.3
+    - name: Install dependencies for GO
+      run: |
+        go get github.com/franela/goblin
+        go install gotest.tools/gotestsum@latest
+        go test -v
+        go test -v | gotestsum --junitfile report.xml
+        ls
+        
+    - if: ${{ success() }}
+      name: Create Upload directory
+      run: mkdir upload
+    
+    - name: Prepare Documents
+      run: mv report.xml ./upload
+    
+    - name: Prepare artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: assetDocuments
+        path: upload
+    
+    - name: Download Content
+      uses: actions/download-artifact@v2
+      with:
+        name: assetDocuments  
+        
+    - if: ${{ failure()}}
+      uses: dacbd/create-issue-action@main
+      with:
+        token: ${{ github.token }}
+        title: Action workflow failed.
+        body: |
+          ### Context
+          [Failed Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          [Codebase](https://github.com/${{ github.repository }}/tree/${{ github.sha }})
+          Workflow name - `${{ github.workflow }}`
+          Job -           `${{ github.job }}`
+          status -        `${{ job.status }}`
+        assignees: c-kinsumandy
+        
+    - name: Publish Test Results
+      uses: EnricoMi/publish-unit-test-result-action/composite@v2
+      if: always()
+      with:
+        junit_files: "report.xml"
